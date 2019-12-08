@@ -32,7 +32,7 @@ fs_legend = 20
 # fname = '~/Documents/research/sierra/data/20m_analysis/compiled_SUPERsnow_20m.nc' #BSU
 fname = '~/Documents/research/sierra/data/compiled_SUPERsnow.nc' #BSU
 #~~peak
-which_yr='peak'
+which_yr='acum'
 #~~annual
 # which_yrs=range(2013,2014)
 # print(which_yrs)
@@ -44,10 +44,22 @@ print('~~~~~YEAR~~~~~',which_yr)
 ds = xr.open_dataset(fname,  chunks={'time':1,'x':1000,'y':1000})
 
 #~~~~ ds peak (cloest to peak SWE dates)
-dpeak = ds.isel(time=[0,7,18,30,42,49])
-dpeak.close()
+# dpeak = ds.isel(time=[0,7,18,30,42,49])
+# dpeak.close()
+#
+# ds = dpeak
 
-ds = dpeak
+#~~~~~ ds melt
+# dmelt = ds.isel(time=[2,3,10,11,20,21,32,33,43,44])
+# dmelt.close()
+#
+# ds = dmelt
+
+#~~~~~ ds acum
+dacum = ds.isel(time=[6,17,27,28,29,40,41])
+dacum.close()
+
+ds = dacum
 
 #~~~~ ds small
 # dsmall = ds.sel(time='{}'.format(which_yr))
@@ -65,14 +77,14 @@ ds
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #load terrain
 #     path = '/home/meganmason/Documents/projects/thesis/data/processing_lidar/depths_3m/equal_extent/terrain/*.nc' #ARS
-path = '/Users/meganmason491/Documents/research/sierra/data/terrain/*.nc' #BSU
-fpath = glob.glob(path)
-terrain=xr.open_mfdataset(fpath, concat_dim=None, chunks={'x':1000, 'y':1000}, parallel=True).rename({'Band1':'hillshade'}).drop('transverse_mercator') #combine='nested',
-
-terrain=np.flip(terrain.hillshade,0)
-terrain=terrain.where(ds.mask==1)
-terrain=terrain.to_dataset()
-terrain.close()
+# path = '/Users/meganmason491/Documents/research/sierra/data/terrain/*.nc' #BSU
+# fpath = glob.glob(path)
+# terrain=xr.open_mfdataset(fpath, concat_dim=None, chunks={'x':1000, 'y':1000}, parallel=True).rename({'Band1':'hillshade'}).drop('transverse_mercator') #combine='nested',
+#
+# terrain=np.flip(terrain.hillshade,0)
+# terrain=terrain.where(ds.mask==1)
+# terrain=terrain.to_dataset()
+# terrain.close()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #compute stats from xarray
@@ -105,21 +117,21 @@ stdize_std_over_time = stdize.std(dim='time')
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #consider elevation
 #flatten
-dem_flat = ds.dem.values.flatten()
-dem_flat = np.where(dem_flat>0, dem_flat, np.nan)
+# dem_flat = ds.dem.values.flatten()
+# dem_flat = np.where(dem_flat>0, dem_flat, np.nan)
 
-s_flat = stdize_std_over_time.values.flatten()
-s_flat = np.where(s_flat>0, s_flat, np.nan)
+s_flat = stdize_std_over_time[::100].values.flatten()
+# s_flat = np.where(s_flat>0, s_flat, np.nan)
 print('s is flat')
-
+np.save('s_flat_{}'.format(which_yr), s_flat)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #PLOT elevation vs standard deviation
-fig = plt.figure(figsize=(6, 4))
-plt.hexbin(dem_flat[::10], s_flat[::10], mincnt=11, bins=1000, vmax=500, cmap='cividis')
-plt.xlabel('Elevation [m]')
-plt.ylabel('$\sigma$ of SDV')
-plt.title('{}'.format(which_yr))
-plt.ylim(0,5)
-# plt.colorbar(label='frequency')
-plt.savefig('../figs/elev_vs_sigma_{}'.format(which_yr), dpi=300, transparent=True)
-print('second plot complete')
+# fig = plt.figure(figsize=(6, 4))
+# plt.hexbin(dem_flat[::10], s_flat[::10], mincnt=11, bins=1000, vmax=500, cmap='cividis')
+# plt.xlabel('Elevation [m]')
+# plt.ylabel('$\sigma$ of SDV')
+# plt.title('{}'.format(which_yr))
+# plt.ylim(0,5)
+# # plt.colorbar(label='frequency')
+# plt.savefig('../figs/elev_vs_sigma_{}'.format(which_yr), dpi=300, transparent=True)
+# print('second plot complete')

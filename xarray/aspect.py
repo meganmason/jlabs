@@ -39,30 +39,30 @@ ds.close()
 
 #load terrain~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #     path = '/home/meganmason/Documents/projects/thesis/data/processing_lidar/depths_3m/equal_extent/terrain/*.nc' #ARS
-path = '/Users/meganmason491/Documents/research/sierra/data/terrain/*.nc' #BSU
-fpath = glob.glob(path)
-terrain=xr.open_mfdataset(fpath, concat_dim=None, chunks={'x':1000, 'y':1000}, parallel=True).rename({'Band1':'hillshade'}).drop('transverse_mercator') #combine='nested',
-
-terrain=np.flip(terrain.aspect,0)
-terrain=terrain.where(ds.mask==1)
-terrain=terrain.to_dataset()
-terrain.close()
-print('starting to flatten aspect')
-asp_flat = terrain.aspect[::1000].values.flatten()
-print('aspect flattened complete!')
+# path = '/Users/meganmason491/Documents/research/sierra/data/terrain/*.nc' #BSU
+# fpath = glob.glob(path)
+# terrain=xr.open_mfdataset(fpath, concat_dim=None, chunks={'x':1000, 'y':1000}, parallel=True).rename({'Band1':'hillshade'}).drop('transverse_mercator') #combine='nested',
+#
+# terrain=np.flip(terrain.aspect,0)
+# terrain=terrain.where(ds.mask==1)
+# terrain=terrain.to_dataset()
+# terrain.close()
+# print('starting to flatten aspect')
+# asp_flat = terrain.aspect[::1000].values.flatten()
+# print('aspect flattened complete!')
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #load lidar
 # fname = '/home/meganmason/Documents/projects/thesis/results/output/compiled_SUPERsnow_20m.nc' #ARS
 # fname = '~/Documents/projects/thesis/results/output/compiled_SUPERsnow.nc' #ARS
 # fname = '~/Documents/research/sierra/data/20m_analysis/compiled_SUPERsnow_20m.nc' #BSU
-# fname = '~/Documents/research/sierra/data/compiled_SUPERsnow.nc' #BSU
+fname = '~/Documents/research/sierra/data/compiled_SUPERsnow.nc' #BSU
 
 # ~~peak
-which_yr='peak'
+# which_yr='peak'
 
 #~~annual
-# which_yrs=range(2013,2018)
+which_yrs=range(2018,2019)
 # print(which_yrs)
 #
 # for which_yr in which_yrs:
@@ -72,16 +72,16 @@ print('~~~~~YEAR~~~~~',which_yr)
 ds = xr.open_dataset(fname,  chunks={'time':1,'x':1000,'y':1000})
 
 # #~~~~ ds peak (cloest to peak SWE dates)
-dpeak = ds.isel(time=[0,7,18,30,42,49])
-dpeak.close()
-
-ds = dpeak
+# dpeak = ds.isel(time=[0,7,18,30,42,49])
+# dpeak.close()
+#
+# ds = dpeak
 
 #~~~~ ds small
-# dsmall = ds.sel(time='{}'.format(which_yr))
-# dsmall.close()
-#
-# ds = dsmall
+dsmall = ds.sel(time='{}'.format(which_yr))
+dsmall.close()
+
+ds = dsmall
 
 #~~~convert to cm
 ds['snow'] = ds.snow / 10
@@ -154,9 +154,10 @@ print('{} standardized complete'.format(which_yr))
 # asp_flat = terrain.aspect.values.flatten()
 # asp_flat = np.where(dem_flat>0, dem_flat, np.nan)
 
-s_flat = stdize_std_over_time[::1000].values.flatten()
-s_flat = np.where(s_flat>0, s_flat, np.nan)
+s_flat = stdize_std_over_time[::100].values.flatten()
+# s_flat = np.where(s_flat>0, s_flat, np.nan)
 print('s is flat')
+np.save('s_flat_{}'.format(which_yr), s_flat)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #PLOT elevation vs standard deviation
 # print(len(asp_flat))
